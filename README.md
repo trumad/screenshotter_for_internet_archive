@@ -1,6 +1,6 @@
 # screenshotter_for_internet_archive
 
-This is a npm script for screenshotting items from the [software library](https://archive.org/details/softwarelibrary) on the internet archive, using the puppeteer library.
+This is a npm script for screenshotting items from the [software library](https://archive.org/details/softwarelibrary) on the internet archive, using the [puppeteer](https://pptr.dev/) library.
 
 # Installation
 

@@ -1,10 +1,12 @@
+//https://github.com/trumad/screenshotter_for_internet_archive
+
 //Install:
 //make a directory,
 //copy this file into your directory
 //inside there type npm init -y
 //then type npm install puppeteer yargs --save
 //then run this file, using: 
-//node screenshotter.js --id item_identifier,another_item,yet_another_item
+//node screenshotter.js -i item_identifier,another_item,yet_another_item
 // or node screenshotter.js -c --id collection_identifier
 // Also: node screenshotter.js --help
 
@@ -14,13 +16,14 @@ const puppeteer = require('puppeteer');
 // Adding arguments handling: 
 const fs = require('fs');
 const milliseconds = (h, m, s) => ((h*60*60+m*60+s)*1000); // quick function to calculate milliseconds - days, hours, minutes
+const version = "1.3";
 
 const argv = require('yargs')
   .usage('Usage: node $0 [options]')
-  .example('node $0 -id [item_identifier,another_item]', 'Screenshot an archive item, or an array of items')
+  .example('node $0 -i item_identifier,another_item', 'Screenshot an archive item, or an array of items')
   .option("i", {
     alias: "identifier",
-    describe: "Screenshot this/these items",
+    describe: "Screenshot this/these items (comma separated)",
     type: "string",
     nargs: 1,
     demandOption: "Please use -i to specify identifier(s) (comma separated)",
@@ -33,7 +36,7 @@ const argv = require('yargs')
   })
   .option("d", {
     alias: "delay",
-    describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot.",
+    describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot or pressing the first key.",
     type: "number",
     default: 15,
   })
@@ -53,7 +56,7 @@ const argv = require('yargs')
     alias: "keypresses",
     describe: "Keypresses to send (comma separated. Reference: https://github.com/GoogleChrome/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js)",
     type: "string",
-    default:"Space,Enter",
+    default:"",
   })
   .option("p", {
     alias: "keypressdelay",
@@ -165,7 +168,7 @@ async function run() { // define the main function
                 console.log("Hitting up " + currentResultsPage + " to get full URLs for more items...");
                 let browserPage = await browser.newPage(); // open up a tab
                 await bigPage(browserPage);
-                browserPage.setDefaultTimeout(timeoutLength); // set that timeout to zero baby
+                browserPage.setDefaultTimeout(timeoutLength);
                 await browserPage.goto(currentResultsPage); // and go ahead & visit the URL
                 let content = await browserPage.evaluate(() => { // Grabbing the hrefs for the items and putting it into the content array
                     let divs = [...document.querySelectorAll('.item-ttl')];
@@ -236,8 +239,10 @@ async function run() { // define the main function
             await page.click('#canvas'); // EXPERIMENTAL - Clicks on the canvas to focus it. 
             console.log("gonna screenshot");
             takeShots();
-            console.log("gonna press keys (after a delay)");
-            pressKeys();
+            if (keyPresses){
+                console.log("gonna press keys (after a delay)");
+                pressKeys();
+            }
             await page.waitForTimeout(maxPageTime);
             /*-------------------------------------
         End of experimental keypress section

@@ -55,6 +55,10 @@ For troubleshooting, you can add `-o true` to output full browser logs
 
 > node screenshotter.js -i msdos_Prince_of_Persia_1990 -o true
 
+For further troubleshooting, you can run it with `-e false` to turn headless mode off - then you can see what the browser is doing in real-time.
+
+> node screenshotter.js -i msdos_Prince_of_Persia_1990 -e false
+
 # Behaviour
 
 The script has a few hidden features. It uses a headless chrome browser, which gets setup inside your folder when you run the install puppeteer command during installation. If that browser crashes for any reason during screenshotting, or if there is any weird issue, the script will create an empty png with the identifier name. When the script runs again, and it's asked to screenshot that item, if it finds an existing png (whether it's a real screenshot or one of those empty pngs) it will skip the item. This means if something bad happens while screenshotting a collection, you can run the script again and it'll continue from where it left off (although it does take a while each time for it to go collate all the items in a collection. You might be faster grabbing a comma separated list of item ids and supplying that as an argument yourself, or writing your own script to kick off this npm script.

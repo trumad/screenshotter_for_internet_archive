@@ -63,7 +63,7 @@ const argv = require('yargs')
   })
   .option("t", {
     alias: "timeout",
-    describe: "Max browser timeout in minutes (eg when a CD takes AGES to download. Does not handle browser crashing)",
+    describe: "Max browser timeout in minutes (eg when a CD takes AGES to download. Does not handle browser crashing). Set to -1 for no timeout.",
     type: "number",
     default: 9,
   })
@@ -75,7 +75,7 @@ const argv = require('yargs')
   })
   .option("o", {
     alias: "dumpio",
-    describe: "provide full browser logs upon crash", // https://github.com/puppeteer/puppeteer/issues/894
+    describe: "provide full browser logs", // https://github.com/puppeteer/puppeteer/issues/894
     type: "boolean",
     default: false,
   })

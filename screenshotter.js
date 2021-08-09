@@ -88,7 +88,7 @@ var idArg = argv.i; // the identifier the user entered
 var isCollection = argv.c; // returns true if the user specified -c. Therefore the identifier is a collection
 const initialDelay = milliseconds(0,0,argv.d);
 const timeoutLength = milliseconds(0,argv.t,0);
-const shortDelay = milliseconds(0,0,argv.p);
+const shortDelay = milliseconds(0,0,argv.p); // shortDelay is the delay between keypresses
 const numberOfShots = argv.s;
 const delayBetweenShots = milliseconds(0,0,argv.l);
 
@@ -113,7 +113,8 @@ console.log(items);
 
 function calculatePageOpenTime(){
     var shotsTime = numberOfShots * delayBetweenShots;
-    var keypressTime = keyPresses ? keyPresses.length * shortDelay : 0;
+    var keypressTime = keyPresses ? (keyPresses.length * shortDelay) + checkExtraKeypressDelayLength(keyPresses) : 0;
+    //console.log(keyPresses);
   //  console.log(shotsTime)
   //  console.log(keypressTime)
     if (keypressTime > shotsTime){return (keypressTime + initialDelay + 2000)}
@@ -149,7 +150,23 @@ function convertStringToArray(string){
     return array;
 }
 
-
+function checkExtraKeypressDelayLength(keypresses){
+    var total = 0;
+    for (let i=0,j = keypresses.length;i<j;i++){
+        var keyPress = keypresses[i];
+        parts = keyPress.split(' ');
+        key = parts.pop();
+        if (parts.length > 0) {
+            for (const modKey of parts) {
+                if (modKey == "DELAY"){ // if the user submits "DELAY 5" as a keypress
+                    var keypressDelay = parseInt(key);
+                    total = total + milliseconds(0,0,keypressDelay);
+                }
+            }
+        }
+    }
+    return total
+}
 
 async function run() { // define the main function
     let browser = await puppeteer.launch({ timeout: 0, headless: runHeadless, dumpio: dumpIo}); // launch browser
@@ -255,6 +272,7 @@ async function run() { // define the main function
                 //  await canvasElement.type(String.fromCharCode(13), { delay: 100 });
                 //  return;
                 let parts, key;
+                forLoop:
                 for (var i=0,j = keyPresses.length;i<j;i++){
                     await page.waitForTimeout(shortDelay-100);
                     try{
@@ -262,9 +280,18 @@ async function run() { // define the main function
                         key = parts.pop();
                         if (parts.length > 0) {
                             for (const modKey of parts) {
-                                console.log(`holding key ${modKey}`);
-                                await page.keyboard.down(modKey);
-                            }
+                                    if (modKey == "DELAY"){ // if the user submits "DELAY 5" as a keypress
+                                        var keypressDelay = milliseconds(0,0,parseInt(key));
+                                        console.log(`doing an extra ${parseInt(key)} second delay`)
+                                        await page.waitForTimeout(keypressDelay); // do an extra delay
+                                        console.log(`Extra delay done. Continuing the next forLoop.`);
+                                        continue forLoop; // what is this goto magic JS can do??
+                                    }
+                                    else{
+                                    console.log(`holding key ${modKey}`);
+                                    await page.keyboard.down(modKey);
+                                    }
+                                }
                         }
                         console.log(`pressing key "${key}"`);
                         await page.keyboard.down(key);
@@ -273,8 +300,10 @@ async function run() { // define the main function
                         await page.keyboard.up(key);
                         if (parts.length > 0) {
                             for (const modKey of parts) {
-                                console.log(`releasing key ${modKey}`);
-                                await page.keyboard.up(modKey);
+                                if (modKey != "DELAY"){
+                                    console.log(`releasing key ${modKey}`);
+                                    await page.keyboard.up(modKey);
+                                }
                             }
                         }
                     }

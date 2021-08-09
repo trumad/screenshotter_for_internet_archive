@@ -47,6 +47,10 @@ The default delay between keypresses is 8 seconds, but you can change this with 
 
 > node screenshotter.js -i msdos_Prince_of_Persia_1990 -k Space,Enter -p 5
 
+There is also a special extra delay you can do during keypresses. Make one of the keypresses be "DELAY 10", and instead of pressing a key, it'll do an extra 10 second delay:
+
+> node screenshotter.js -i "Pac-81_19xx_Danny_Loeff" -k "j,ShiftLeft p,ShiftLeft p,Enter,ScrollLock,F2,DELAY 120,ShiftLeft r,Enter" -e false -s 10 -l 30
+
 There's an overall default timeout of 9 minutes set. It basically sets the puppeteer [setDefaultTimeout](https://pocketadmin.tech/en/puppeteer-timeout/) for each page, which would usually default at 30 seconds. But I found that for [CD-ROM titles](https://archive.org/details/msdos_Discworld_2_-_Missing_Presumed_1996) which download/load very slowly that timeout would kick in and kill the tab. So I set it to 9 minutes. If you find that your tabs are getting killed because CD-ROM items are loading too slowly, you can increase this. Use -t to change it to your own value, in minutes.
 
 > node screenshotter.js -i msdos_Discworld_2_-_Missing_Presumed_1996 -t 75

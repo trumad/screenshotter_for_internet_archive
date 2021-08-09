@@ -39,7 +39,7 @@ The screenshotter delays for 15 seconds after the emulation has fully loaded bef
 
 > node screenshotter.js -i msdos_Prince_of_Persia_1990 -d 25
 
-You can supply a list of comma-separated keypresses (as listed [here](https://github.com/puppeteer/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js) or [here](https://github.com/puppeteer/puppeteer/blob/v5.5.0/src/common/USKeyboardLayout.ts). Note that keypresses are sent simulataneously while the screenshots are being taken
+You can supply a list of comma-separated keypresses (as listed [here](https://github.com/puppeteer/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js) or [here](https://github.com/puppeteer/puppeteer/blob/v5.5.0/src/common/USKeyboardLayout.ts). Note that keypresses are sent simulataneously while the screenshots are being taken. If you submit two keypresses separated with a space (eg `"j,ShiftLeft p,ShiftLeft p,Enter,ScrollLock,F2"`), the screenshotter will treat the first keypress as a modifier and hold it down while pressing the second. (eg ShiftLeft+p).
 
 > node screenshotter.js -i msdos_Prince_of_Persia_1990 -k Space,Enter
 
@@ -50,6 +50,10 @@ The default delay between keypresses is 8 seconds, but you can change this with 
 There's an overall default timeout of 9 minutes set. It basically sets the puppeteer [setDefaultTimeout](https://pocketadmin.tech/en/puppeteer-timeout/) for each page, which would usually default at 30 seconds. But I found that for [CD-ROM titles](https://archive.org/details/msdos_Discworld_2_-_Missing_Presumed_1996) which download/load very slowly that timeout would kick in and kill the tab. So I set it to 9 minutes. If you find that your tabs are getting killed because CD-ROM items are loading too slowly, you can increase this. Use -t to change it to your own value, in minutes.
 
 > node screenshotter.js -i msdos_Discworld_2_-_Missing_Presumed_1996 -t 75
+
+For troubleshooting, you can add `-o true` to output full browser logs
+
+> node screenshotter.js -i msdos_Prince_of_Persia_1990 -o true
 
 # Behaviour
 

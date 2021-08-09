@@ -1,12 +1,10 @@
-//https://github.com/trumad/screenshotter_for_internet_archive
-
 //Install:
 //make a directory,
 //copy this file into your directory
 //inside there type npm init -y
 //then type npm install puppeteer yargs --save
 //then run this file, using: 
-//node screenshotter.js -i item_identifier,another_item,yet_another_item
+//node screenshotter.js --id item_identifier,another_item,yet_another_item
 // or node screenshotter.js -c --id collection_identifier
 // Also: node screenshotter.js --help
 
@@ -16,14 +14,13 @@ const puppeteer = require('puppeteer');
 // Adding arguments handling: 
 const fs = require('fs');
 const milliseconds = (h, m, s) => ((h*60*60+m*60+s)*1000); // quick function to calculate milliseconds - days, hours, minutes
-const version = "1.3";
 
 const argv = require('yargs')
   .usage('Usage: node $0 [options]')
-  .example('node $0 -i item_identifier,another_item', 'Screenshot an archive item, or an array of items')
+  .example('node $0 -id [item_identifier,another_item]', 'Screenshot an archive item, or an array of items')
   .option("i", {
     alias: "identifier",
-    describe: "Screenshot this/these items (comma separated)",
+    describe: "Screenshot this/these items",
     type: "string",
     nargs: 1,
     demandOption: "Please use -i to specify identifier(s) (comma separated)",
@@ -36,7 +33,7 @@ const argv = require('yargs')
   })
   .option("d", {
     alias: "delay",
-    describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot or pressing the first key.",
+    describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot.",
     type: "number",
     default: 15,
   })
@@ -56,7 +53,7 @@ const argv = require('yargs')
     alias: "keypresses",
     describe: "Keypresses to send (comma separated. Reference: https://github.com/GoogleChrome/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js)",
     type: "string",
-    default:"",
+    default:"Space,Enter",
   })
   .option("p", {
     alias: "keypressdelay",
@@ -75,6 +72,12 @@ const argv = require('yargs')
     describe: "Run the browser headless",
     type: "boolean",
     default: true,
+  })
+  .option("o", {
+    alias: "dumpio",
+    describe: "provide full browser logs upon crash", // https://github.com/puppeteer/puppeteer/issues/894
+    type: "boolean",
+    default: false,
   })
   .help('h')
   .alias('h', 'help').argv
@@ -101,6 +104,7 @@ var items = convertItemToArray(idArg);
 
 var keyPresses = argv.k ? convertStringToArray(argv.k) : false;
 var runHeadless = argv.e;
+var dumpIo = argv.o;
 console.log(`Browser running headless: ${runHeadless}`)
 const maxPageTime = calculatePageOpenTime();
 console.log(`Each item will take ${maxPageTime/1000} seconds to screenshot`);
@@ -141,13 +145,14 @@ function convertStringToArray(string){
             throw "\n-------------------------------\IStrings should be comma separated with no spaces\n-------------------------------\n";
         }
     }
+    console.log(array);
     return array;
 }
 
 
 
 async function run() { // define the main function
-    let browser = await puppeteer.launch({ timeout: 0, headless: runHeadless }); // launch browser
+    let browser = await puppeteer.launch({ timeout: 0, headless: runHeadless, dumpio: dumpIo}); // launch browser
     try {
         var itemsArray = []; // we'll populate this in the for loop below
         if (isCollection){ // user submitted a collection
@@ -168,7 +173,7 @@ async function run() { // define the main function
                 console.log("Hitting up " + currentResultsPage + " to get full URLs for more items...");
                 let browserPage = await browser.newPage(); // open up a tab
                 await bigPage(browserPage);
-                browserPage.setDefaultTimeout(timeoutLength);
+                browserPage.setDefaultTimeout(timeoutLength); // set that timeout to zero baby
                 await browserPage.goto(currentResultsPage); // and go ahead & visit the URL
                 let content = await browserPage.evaluate(() => { // Grabbing the hrefs for the items and putting it into the content array
                     let divs = [...document.querySelectorAll('.item-ttl')];
@@ -207,7 +212,7 @@ async function run() { // define the main function
             page.on('console', message =>
                 thisPageConsoleLogs.push `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`)
             await bigPage(page);
-            page.on('pageerror', error => console.error(`❌ ${error}`)); // log page console errors, cos why not
+            page.on('pageerror', error => console.error(`âŒ ${error}`)); // log page console errors, cos why not
             page.setDefaultTimeout(timeoutLength); // set that timeout - especially for those damn CD ROM load times
             await page.goto(currentUrl); // Visit the url
             let bodyHTML = await page.evaluate(() => document.body.innerHTML);
@@ -239,26 +244,39 @@ async function run() { // define the main function
             await page.click('#canvas'); // EXPERIMENTAL - Clicks on the canvas to focus it. 
             console.log("gonna screenshot");
             takeShots();
-            if (keyPresses){
-                console.log("gonna press keys (after a delay)");
-                pressKeys();
-            }
+            console.log("gonna press keys (after a delay)");
+            pressKeys();
             await page.waitForTimeout(maxPageTime);
             /*-------------------------------------
         End of experimental keypress section
         --------------------------------------*/
             async function pressKeys(){
                 if (!keyPresses){return} // user doesn't want to press any keys
-              //  await canvasElement.type(String.fromCharCode(13), { delay: 100 });
-              //  return;
+                //  await canvasElement.type(String.fromCharCode(13), { delay: 100 });
+                //  return;
+                let parts, key;
                 for (var i=0,j = keyPresses.length;i<j;i++){
                     await page.waitForTimeout(shortDelay-100);
                     try{
-                        console.log(`pressing key "${keyPresses[i]}"`);
-                        await page.keyboard.down(keyPresses[i]);
+                        parts = keyPresses[i].split(' ');
+                        key = parts.pop();
+                        if (parts.length > 0) {
+                            for (const modKey of parts) {
+                                console.log(`holding key ${modKey}`);
+                                await page.keyboard.down(modKey);
+                            }
+                        }
+                        console.log(`pressing key "${key}"`);
+                        await page.keyboard.down(key);
                         await page.waitForTimeout(80);
-                      //  await page.keyboard.press(keyPresses[i]);
-                        await page.keyboard.up(keyPresses[i]);
+                        await page.keyboard.press(key);
+                        await page.keyboard.up(key);
+                        if (parts.length > 0) {
+                            for (const modKey of parts) {
+                                console.log(`releasing key ${modKey}`);
+                                await page.keyboard.up(modKey);
+                            }
+                        }
                     }
                     catch(e){console.log(e)}
                 }

@@ -4,10 +4,9 @@ This is a npm script for screenshotting items from the [software library](https:
 
 # Installation
 
-* make a directory in a unix-based OS
-* copy screenshotter.js into your directory
-* inside there type npm init -y
-* then type npm install puppeteer yargs --save
+* Clone this repo
+* Install node (This script works with node 22, and npm 10)
+* Run `npm install` to install puppeteer 21 and yargs 17
 
 # Usage
 

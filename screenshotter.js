@@ -2,15 +2,16 @@
 //make a directory,
 //copy this file into your directory
 //inside there type npm init -y
-//then type npm install puppeteer yargs --save
+//then type npm install puppeteer yargs --save (version 21 still works with the waitForTimeout used below)
 //then run this file, using: 
-//node screenshotter.js --id item_identifier,another_item,yet_another_item
-// or node screenshotter.js -c --id collection_identifier
+//node screenshotter.js --i item_identifier,another_item,yet_another_item
+// or node screenshotter.js -c --i collection_identifier
 // Also: node screenshotter.js --help
 
 //todo: Add instructions for installing this script globally: https://markoskon.com/yargs-examples/
 
 const puppeteer = require('puppeteer');
+
 // Adding arguments handling: 
 const fs = require('fs');
 const milliseconds = (h, m, s) => ((h*60*60+m*60+s)*1000); // quick function to calculate milliseconds - days, hours, minutes

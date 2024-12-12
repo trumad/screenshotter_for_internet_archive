@@ -1,0 +1,19 @@
+{
+  "name": "screenshotter_for_internet_archive",
+  "version": "1.0.0",
+  "description": "This is a npm script for screenshotting items from the [software library](https://archive.org/details/softwarelibrary) on the internet archive, using the [puppeteer](https://pptr.dev/) library.",
+  "main": "screenshotter.js",
+  "engines": {
+    "node": "22.7.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^21.11.0",
+    "yargs": "^17.7.2"
+  }
+}

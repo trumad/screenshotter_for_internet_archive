@@ -17,71 +17,71 @@ const fs = require('fs');
 const milliseconds = (h, m, s) => ((h*60*60+m*60+s)*1000); // quick function to calculate milliseconds - days, hours, minutes
 
 const argv = require('yargs')
-  .usage('Usage: node $0 [options]')
-  .example('node $0 -id [item_identifier,another_item]', 'Screenshot an archive item, or an array of items')
-  .option("i", {
-    alias: "identifier",
-    describe: "Screenshot this/these items",
-    type: "string",
-    nargs: 1,
-    demandOption: "Please use -i to specify identifier(s) (comma separated)",
-  })
-  .option("c", {
-    alias: "collection",
-    describe: "Add this to signify that the item is a collection",
-    type: "boolean",
-    default: false,
-  })
-  .option("d", {
-    alias: "delay",
-    describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot.",
-    type: "number",
-    default: 15,
-  })
-  .option("s", {
-    alias: "shots",
-    describe: "How many screenshots to take",
-    type: "number",
-    default: 1,
-  })
-  .option("l", {
-    alias: "shotsdelay",
-    describe: "Delay between shots in seconds",
-    type: "number",
-    default: 2,
-  })
-  .option("k", {
-    alias: "keypresses",
-    describe: "Keypresses to send (comma separated. Reference: https://github.com/GoogleChrome/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js)",
-    type: "string",
-    default:"Space,Enter",
-  })
-  .option("p", {
-    alias: "keypressdelay",
-    describe: "Delay between keypresses in seconds",
-    type: "number",
-    default: 8,
-  })
-  .option("t", {
-    alias: "timeout",
-    describe: "Max browser timeout in minutes (eg when a CD takes AGES to download. Does not handle browser crashing). Set to -1 for no timeout.",
-    type: "number",
-    default: 9,
-  })
-  .option("e", {
-    alias: "headless",
-    describe: "Run the browser headless",
-    type: "boolean",
-    default: true,
-  })
-  .option("o", {
-    alias: "dumpio",
-    describe: "provide full browser logs", // https://github.com/puppeteer/puppeteer/issues/894
-    type: "boolean",
-    default: false,
-  })
-  .help('h')
-  .alias('h', 'help').argv
+    .usage('Usage: node $0 [options]')
+    .example('node $0 -id [item_identifier,another_item]', 'Screenshot an archive item, or an array of items')
+    .option("i", {
+        alias: "identifier",
+        describe: "Screenshot this/these items",
+        type: "string",
+        nargs: 1,
+        demandOption: "Please use -i to specify identifier(s) (comma separated)",
+    })
+    .option("c", {
+        alias: "collection",
+        describe: "Add this to signify that the item is a collection",
+        type: "boolean",
+        default: false,
+    })
+    .option("d", {
+        alias: "delay",
+        describe: "How long to delay (in seconds) after the emulation has loaded before taking the first screenshot.",
+        type: "number",
+        default: 15,
+    })
+    .option("s", {
+        alias: "shots",
+        describe: "How many screenshots to take",
+        type: "number",
+        default: 1,
+    })
+    .option("l", {
+        alias: "shotsdelay",
+        describe: "Delay between shots in seconds",
+        type: "number",
+        default: 2,
+    })
+    .option("k", {
+        alias: "keypresses",
+        describe: "Keypresses to send (comma separated. Reference: https://github.com/GoogleChrome/puppeteer/blob/v1.14.0/lib/USKeyboardLayout.js)",
+        type: "string",
+        default:"Space,Enter",
+    })
+    .option("p", {
+        alias: "keypressdelay",
+        describe: "Delay between keypresses in seconds",
+        type: "number",
+        default: 8,
+    })
+    .option("t", {
+        alias: "timeout",
+        describe: "Max browser timeout in minutes (eg when a CD takes AGES to download. Does not handle browser crashing). Set to -1 for no timeout.",
+        type: "number",
+        default: 9,
+    })
+    .option("e", {
+        alias: "headless",
+        describe: "Run the browser headless",
+        type: "boolean",
+        default: true,
+    })
+    .option("o", {
+        alias: "dumpio",
+        describe: "provide full browser logs", // https://github.com/puppeteer/puppeteer/issues/894
+        type: "boolean",
+        default: false,
+    })
+    .help('h')
+    .alias('h', 'help').argv
 
 
 var iaBaseUrl = "https://archive.org/details/";
@@ -119,8 +119,8 @@ function calculatePageOpenTime(){
     var shotsTime = numberOfShots * delayBetweenShots;
     var keypressTime = keyPresses ? (keyPresses.length * shortDelay) + checkExtraKeypressDelayLength(keyPresses) : 0;
     //console.log(keyPresses);
-  //  console.log(shotsTime)
-  //  console.log(keypressTime)
+    //  console.log(shotsTime)
+    //  console.log(keypressTime)
     if (keypressTime > shotsTime){return (keypressTime + initialDelay + 2000)}
     if (shotsTime > keypressTime){return (shotsTime + initialDelay + 2000)}
 }
@@ -173,7 +173,8 @@ function checkExtraKeypressDelayLength(keypresses){
 }
 
 async function run() { // define the main function
-    let browser = await puppeteer.launch({ timeout: 0, headless: runHeadless, dumpio: dumpIo}); // launch browser
+  // Remove the --no-sandbox arg if you prefer
+    let browser = await puppeteer.launch({ timeout: 0, headless: runHeadless, dumpio: dumpIo, args: ['--no-sandbox'],}); // launch browser
     try {
         var itemsArray = []; // we'll populate this in the for loop below
         if (isCollection){ // user submitted a collection
@@ -246,12 +247,12 @@ async function run() { // define the main function
             console.log("gonna wait for splash screen to go away")
             await page.waitForFunction("document.querySelector('.emularity-splash-screen') && document.querySelector('.emularity-splash-screen').style.display == 'none'");
             // wait another 10 seconds, for good measure
-                function giveUp(arg) { // function to close the browser if all else fails
-                 // console.log(`arg was => ${arg}`);
-                 console.log("page must have stopped responding for item " + itemId);
-                 fs.closeSync(fs.openSync(potentialPngFilename, 'w')); // touches the filename so it doesn't crap out on the same file next time through
-                    browser.close(); // SHUT IT DOWN (this will trigger the normal error catching, which will restart the run function)
-                }
+            function giveUp(arg) { // function to close the browser if all else fails
+                // console.log(`arg was => ${arg}`);
+                console.log("page must have stopped responding for item " + itemId);
+                fs.closeSync(fs.openSync(potentialPngFilename, 'w')); // touches the filename so it doesn't crap out on the same file next time through
+                browser.close(); // SHUT IT DOWN (this will trigger the normal error catching, which will restart the run function)
+            }
             var fallbackTimeout = setTimeout(giveUp, maxPageTime*3, potentialPngFilename); // give up after waiting 3 times as long as it should take to do the shots/keypresses
             console.log(`splash screen went away. waiting for ${initialDelay/1000} seconds.`)
             await sleep(initialDelay);
@@ -277,13 +278,13 @@ async function run() { // define the main function
                 //  return;
                 let parts, key;
                 forLoop:
-                for (var i=0,j = keyPresses.length;i<j;i++){
-                    await sleep(shortDelay-100);
-                    try{
-                        parts = keyPresses[i].split(' ');
-                        key = parts.pop();
-                        if (parts.length > 0) {
-                            for (const modKey of parts) {
+                    for (var i=0,j = keyPresses.length;i<j;i++){
+                        await sleep(shortDelay-100);
+                        try{
+                            parts = keyPresses[i].split(' ');
+                            key = parts.pop();
+                            if (parts.length > 0) {
+                                for (const modKey of parts) {
                                     if (modKey == "DELAY"){ // if the user submits "DELAY 5" as a keypress
                                         var keypressDelay = milliseconds(0,0,parseInt(key));
                                         console.log(`doing an extra ${parseInt(key)} second delay`)
@@ -292,27 +293,27 @@ async function run() { // define the main function
                                         continue forLoop; // what is this goto magic JS can do??
                                     }
                                     else{
-                                    console.log(`holding key ${modKey}`);
-                                    await page.keyboard.down(modKey);
+                                        console.log(`holding key ${modKey}`);
+                                        await page.keyboard.down(modKey);
                                     }
                                 }
-                        }
-                        console.log(`pressing key "${key}"`);
-                        await page.keyboard.down(key);
-                        await sleep(80);
-                        await page.keyboard.press(key);
-                        await page.keyboard.up(key);
-                        if (parts.length > 0) {
-                            for (const modKey of parts) {
-                                if (modKey != "DELAY"){
-                                    console.log(`releasing key ${modKey}`);
-                                    await page.keyboard.up(modKey);
+                            }
+                            console.log(`pressing key "${key}"`);
+                            await page.keyboard.down(key);
+                            await sleep(80);
+                            await page.keyboard.press(key);
+                            await page.keyboard.up(key);
+                            if (parts.length > 0) {
+                                for (const modKey of parts) {
+                                    if (modKey != "DELAY"){
+                                        console.log(`releasing key ${modKey}`);
+                                        await page.keyboard.up(modKey);
+                                    }
                                 }
                             }
                         }
+                        catch(e){console.log(e)}
                     }
-                    catch(e){console.log(e)}
-                }
             }
             async function takeShots(){ // making this async so it can do its magic while keypresses are happening separately
                 for (var i=0,j = numberOfShots;i<j;i++){
@@ -347,10 +348,10 @@ async function run() { // define the main function
 
 async function bigPage(page){
     await page.setViewport({
-                width: 1024,
-                height: 1800,
-                deviceScaleFactor: 1,
-                });
+        width: 1024,
+        height: 1800,
+        deviceScaleFactor: 1,
+    });
 }
 
 run(); // make it happen

@@ -6,7 +6,7 @@ This is a npm script for screenshotting items from the [software library](https:
 
 * Clone this repo
 * Install node (This script works with node 22, and npm 10)
-* Run `npm install` to install puppeteer 21 and yargs 17
+* Run `npm install` to install puppeteer 23 and yargs 17
 
 # Usage
 

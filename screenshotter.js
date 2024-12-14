@@ -2,7 +2,7 @@
 //make a directory,
 //copy this file into your directory
 //inside there type npm init -y
-//then type npm install puppeteer yargs --save (version 21 still works with the waitForTimeout used below)
+//then type npm install puppeteer yargs --save (version 23 of puppeteer supported currently)
 //then run this file, using: 
 //node screenshotter.js --i item_identifier,another_item,yet_another_item
 // or node screenshotter.js -c --i collection_identifier
@@ -93,6 +93,9 @@ const shortDelay = milliseconds(0,0,argv.p); // shortDelay is the delay between 
 const numberOfShots = argv.s;
 const delayBetweenShots = milliseconds(0,0,argv.l);
 
+function sleep(ms) { // usage: await sleep(4000)
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 //console.log(iaBaseUrl + idArg)
 //console.log(isCollection)
@@ -251,7 +254,7 @@ async function run() { // define the main function
                 }
             var fallbackTimeout = setTimeout(giveUp, maxPageTime*3, potentialPngFilename); // give up after waiting 3 times as long as it should take to do the shots/keypresses
             console.log(`splash screen went away. waiting for ${initialDelay/1000} seconds.`)
-            await page.waitForTimeout(initialDelay);
+            await sleep(initialDelay);
             /*-------------------------------------
         EXPERIMENTAL KEYPRESS SECTION
         Uncomment these next 3 lines to: click the emulator (to focus it), press "1", wait for the delay length. 
@@ -264,7 +267,7 @@ async function run() { // define the main function
             takeShots();
             console.log("gonna press keys (after a delay)");
             pressKeys();
-            await page.waitForTimeout(maxPageTime);
+            await sleep(maxPageTime);
             /*-------------------------------------
         End of experimental keypress section
         --------------------------------------*/
@@ -275,7 +278,7 @@ async function run() { // define the main function
                 let parts, key;
                 forLoop:
                 for (var i=0,j = keyPresses.length;i<j;i++){
-                    await page.waitForTimeout(shortDelay-100);
+                    await sleep(shortDelay-100);
                     try{
                         parts = keyPresses[i].split(' ');
                         key = parts.pop();
@@ -284,7 +287,7 @@ async function run() { // define the main function
                                     if (modKey == "DELAY"){ // if the user submits "DELAY 5" as a keypress
                                         var keypressDelay = milliseconds(0,0,parseInt(key));
                                         console.log(`doing an extra ${parseInt(key)} second delay`)
-                                        await page.waitForTimeout(keypressDelay); // do an extra delay
+                                        await sleep(keypressDelay); // do an extra delay
                                         console.log(`Extra delay done. Continuing the next forLoop.`);
                                         continue forLoop; // what is this goto magic JS can do??
                                     }
@@ -296,7 +299,7 @@ async function run() { // define the main function
                         }
                         console.log(`pressing key "${key}"`);
                         await page.keyboard.down(key);
-                        await page.waitForTimeout(80);
+                        await sleep(80);
                         await page.keyboard.press(key);
                         await page.keyboard.up(key);
                         if (parts.length > 0) {
@@ -313,7 +316,7 @@ async function run() { // define the main function
             }
             async function takeShots(){ // making this async so it can do its magic while keypresses are happening separately
                 for (var i=0,j = numberOfShots;i<j;i++){
-                    await page.waitForTimeout(delayBetweenShots);
+                    await sleep(delayBetweenShots);
                     await takeShot(i);
                 }
                 async function takeShot(i){
